@@ -4,7 +4,7 @@ import closeImg from '../../assets/close.svg';
 import incomeImg from '../../assets/income.svg';
 import outcomeImg from '../../assets/outcome.svg';
 import { FormEvent, useState } from 'react';
-import { api } from '../../services/api';
+import { useTransactions } from '../../hooks/useTransactions';
 
 interface NewTransactionModalProps {
   isOpen: boolean;
@@ -15,18 +15,21 @@ export function NewTransactionModal({
   isOpen,
   onClose,
 }: NewTransactionModalProps) {
+  const { createTransaction } = useTransactions();
   const [type, setType] = useState('deposit');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [value, setValue] = useState(0);
 
-  function handleCreateNewTransaction(event: FormEvent) {
+  async function handleCreateNewTransaction(event: FormEvent) {
     event.preventDefault();
-    const data = { title, category, value, type };
-
-    api.post('/transactions', data);
+    await createTransaction({ title, value, type, category });
+    setTitle('');
+    setValue(0);
+    setCategory('');
+    setType('deposit');
+    onClose();
   }
-
   return (
     <Modal
       isOpen={isOpen}
@@ -54,7 +57,9 @@ export function NewTransactionModal({
         <TransactionTypeContainer>
           <RadioBox
             type="button"
-            onClick={() => setType('deposit')}
+            onClick={() => {
+              setType('deposit');
+            }}
             isActive={type === 'deposit'}
             activeColor="green"
           >
@@ -64,7 +69,9 @@ export function NewTransactionModal({
 
           <RadioBox
             type="button"
-            onClick={() => setType('withdraw')}
+            onClick={() => {
+              setType('withdraw');
+            }}
             isActive={type === 'withdraw'}
             activeColor="red"
           >
